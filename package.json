@@ -1,0 +1,20 @@
+{
+  "name": "pulsewatch",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Self-hosted uptime monitor and status page.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "pulsewatch": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "author": "Zonash",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  }
+}
