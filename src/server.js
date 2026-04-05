@@ -1,0 +1,21 @@
+import express from "express";
+import { lastCheck, recentChecks } from "./db.js";
+
+export function createApp({ config, db }) {
+  const app = express();
+  const byId = new Map(config.monitors.map((m) => [m.id, m]));
+
+  app.get("/api/monitors", (req, res) => {
+    res.json(
+      config.monitors.map((m) => ({ id: m.id, name: m.name, url: m.url, last: lastCheck(db, m.id) })),
+    );
+  });
+
+  app.get("/api/monitors/:id/checks", (req, res) => {
+    if (!byId.has(req.params.id)) return res.status(404).json({ error: "unknown monitor" });
+    const limit = Math.min(Number(req.query.limit) || 50, 1000);
+    res.json(recentChecks(db, req.params.id, limit));
+  });
+
+  return app;
+}
