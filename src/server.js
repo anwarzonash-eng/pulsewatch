@@ -1,10 +1,13 @@
 import express from "express";
+import { fileURLToPath } from "node:url";
 import { lastCheck, recentChecks } from "./db.js";
 import { renderStatus } from "./views/status.js";
 
 export function createApp({ config, db }) {
   const app = express();
   const byId = new Map(config.monitors.map((m) => [m.id, m]));
+
+  app.use(express.static(fileURLToPath(new URL("../public", import.meta.url))));
 
   app.get("/api/monitors", (req, res) => {
     res.json(
