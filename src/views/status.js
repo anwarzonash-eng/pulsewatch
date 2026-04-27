@@ -1,4 +1,5 @@
 /** Server-rendered status page. */
+import { formatPercent } from "../stats.js";
 
 export function renderStatus({ title, monitors, now = Date.now() }) {
   const allUp = monitors.every((m) => m.last?.ok);
@@ -27,5 +28,6 @@ function renderMonitor(m) {
   const state = m.last == null ? "unknown" : m.last.ok ? "up" : "down";
   const label = { up: "Up", down: "Down", unknown: "No data" }[state];
   const detail = m.last ? `${m.last.ms} ms` : "";
-  return `<li class="monitor ${state}"><span class="name">${m.name}</span><span class="state">${label}</span><span class="ms">${detail}</span></li>`;
+  const uptime = m.uptime ? `<span class="uptime" title="last 30 days">${formatPercent(m.uptime.month)}</span>` : "";
+  return `<li class="monitor ${state}"><span class="name">${m.name}</span>${uptime}<span class="state">${label}</span><span class="ms">${detail}</span></li>`;
 }

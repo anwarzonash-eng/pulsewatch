@@ -55,6 +55,7 @@ h1 { margin: 0 0 16px; font-size: 1.6rem; }
 .monitor .name { flex: 1; font-weight: 500; }
 .monitor .ms { color: var(--muted); font-size: 0.9rem; min-width: 64px; text-align: right; }
 .monitor .state { font-size: 0.9rem; font-weight: 600; }
+.monitor .uptime { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
 .monitor.up .state { color: var(--up); }
 .monitor.down .state { color: var(--down); }
 .monitor.unknown .state { color: var(--unknown); }
