@@ -1,6 +1,7 @@
 import express from "express";
 import { fileURLToPath } from "node:url";
 import { lastCheck, recentChecks } from "./db.js";
+import { listIncidents } from "./incidents.js";
 import { uptimeSummary } from "./stats.js";
 import { renderStatus } from "./views/status.js";
 
@@ -26,6 +27,10 @@ export function createApp({ config, db }) {
     if (!byId.has(req.params.id)) return res.status(404).json({ error: "unknown monitor" });
     const limit = Math.min(Number(req.query.limit) || 50, 1000);
     res.json(recentChecks(db, req.params.id, limit));
+  });
+
+  app.get("/api/incidents", (req, res) => {
+    res.json(listIncidents(db, { limit: Math.min(Number(req.query.limit) || 20, 200) }));
   });
 
   app.get("/", (req, res) => {

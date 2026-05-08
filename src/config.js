@@ -26,6 +26,7 @@ export function normalize(raw) {
     title: raw.title ?? "Status",
     port: raw.port ?? 3000,
     database: raw.database ?? "pulsewatch.db",
+    failuresBeforeIncident: raw.failuresBeforeIncident ?? 2,
     monitors,
   };
 }

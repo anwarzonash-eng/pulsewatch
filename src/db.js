@@ -12,6 +12,13 @@ export function openDb(file) {
       ms INTEGER,
       error TEXT
     );
+    CREATE TABLE IF NOT EXISTS incidents (
+      id INTEGER PRIMARY KEY,
+      monitor_id TEXT NOT NULL,
+      started_at INTEGER NOT NULL,
+      resolved_at INTEGER,
+      cause TEXT
+    );
   `);
   return db;
 }
