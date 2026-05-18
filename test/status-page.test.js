@@ -23,3 +23,26 @@ test("one down, one without data", () => {
   assert.match(html, /class="monitor down"/);
   assert.match(html, /class="monitor unknown"/);
 });
+
+test("incidents section", async () => {
+  const { formatDuration } = await import("../src/views/status.js");
+  const html = renderStatus({
+    title: "Status",
+    monitors: [{ id: "api", name: "API", last: { ok: true, ms: 10 } }],
+    incidents: [
+      { id: 2, monitorId: "api", startedAt: 0, resolvedAt: null, cause: "HTTP 502" },
+      { id: 1, monitorId: "api", startedAt: 0, resolvedAt: 90 * 60000, cause: "timeout after 10s" },
+    ],
+    now: 30 * 60000,
+  });
+  assert.match(html, /Ongoing/);
+  assert.match(html, /Resolved/);
+  assert.match(html, /1 h 30 min/);
+  assert.match(html, /HTTP 502/);
+  assert.equal(formatDuration(5 * 1000), "1 min");
+  assert.equal(formatDuration(2 * 3600000), "2 h");
+});
+
+test("no incidents", () => {
+  assert.match(renderStatus({ title: "S", monitors: [] }), /No incidents in the last 14 days/);
+});

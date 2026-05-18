@@ -1,7 +1,7 @@
 /** Server-rendered status page. */
 import { formatPercent } from "../stats.js";
 
-export function renderStatus({ title, monitors, now = Date.now() }) {
+export function renderStatus({ title, monitors, incidents = [], now = Date.now() }) {
   const allUp = monitors.every((m) => m.last?.ok);
   return `<!doctype html>
 <html lang="en">
@@ -18,6 +18,8 @@ export function renderStatus({ title, monitors, now = Date.now() }) {
     <ul class="monitors">
       ${monitors.map(renderMonitor).join("\n      ")}
     </ul>
+    <h2>Recent incidents</h2>
+    ${renderIncidents(incidents, monitors, now)}
     <footer>Updated ${new Date(now).toISOString().replace("T", " ").slice(0, 16)} UTC</footer>
   </main>
 </body>
@@ -30,4 +32,30 @@ function renderMonitor(m) {
   const detail = m.last ? `${m.last.ms} ms` : "";
   const uptime = m.uptime ? `<span class="uptime" title="last 30 days">${formatPercent(m.uptime.month)}</span>` : "";
   return `<li class="monitor ${state}"><span class="name">${m.name}</span>${uptime}<span class="state">${label}</span><span class="ms">${detail}</span></li>`;
+}
+
+function renderIncidents(incidents, monitors, now) {
+  if (incidents.length === 0) return `<p class="none">No incidents in the last 14 days.</p>`;
+  const names = new Map(monitors.map((m) => [m.id, m.name]));
+  const items = incidents.map((i) => {
+    const end = i.resolvedAt ?? now;
+    const state = i.resolvedAt ? "Resolved" : "Ongoing";
+    return `<li class="incident ${i.resolvedAt ? "resolved" : "ongoing"}">
+        <strong>${names.get(i.monitorId) ?? i.monitorId}</strong> <span class="badge">${state}</span>
+        <div class="when">${formatTime(i.startedAt)} UTC, ${formatDuration(end - i.startedAt)}</div>
+        <div class="cause">${i.cause ?? ""}</div>
+      </li>`;
+  });
+  return `<ul class="incidents">\n      ${items.join("\n      ")}\n    </ul>`;
+}
+
+function formatTime(ms) {
+  return new Date(ms).toISOString().replace("T", " ").slice(0, 16);
+}
+
+export function formatDuration(ms) {
+  const minutes = Math.max(1, Math.round(ms / 60000));
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return minutes % 60 ? `${hours} h ${minutes % 60} min` : `${hours} h`;
 }

@@ -61,3 +61,19 @@ h1 { margin: 0 0 16px; font-size: 1.6rem; }
 .monitor.unknown .state { color: var(--unknown); }
 
 footer { color: var(--muted); font-size: 0.85rem; text-align: center; }
+
+h2 { font-size: 1.15rem; margin: 32px 0 12px; }
+.none { color: var(--muted); }
+
+.incidents { list-style: none; margin: 0; padding: 0; }
+.incident {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--down);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+}
+.incident.resolved { border-left-color: var(--up); }
+.incident .badge { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
+.incident .when, .incident .cause { color: var(--muted); font-size: 0.9rem; }

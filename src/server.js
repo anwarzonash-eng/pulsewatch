@@ -2,7 +2,7 @@ import express from "express";
 import { fileURLToPath } from "node:url";
 import { lastCheck, recentChecks } from "./db.js";
 import { listIncidents } from "./incidents.js";
-import { uptimeSummary } from "./stats.js";
+import { DAY, uptimeSummary } from "./stats.js";
 import { renderStatus } from "./views/status.js";
 
 export function createApp({ config, db }) {
@@ -35,11 +35,14 @@ export function createApp({ config, db }) {
 
   app.get("/", (req, res) => {
     const monitors = config.monitors.map((m) => ({
+      id: m.id,
       name: m.name,
       last: lastCheck(db, m.id),
       uptime: uptimeSummary(db, m.id),
     }));
-    res.type("html").send(renderStatus({ title: config.title, monitors }));
+    const since = Date.now() - 14 * DAY;
+    const incidents = listIncidents(db, { limit: 20 }).filter((i) => (i.resolvedAt ?? Date.now()) >= since);
+    res.type("html").send(renderStatus({ title: config.title, monitors, incidents }));
   });
 
   return app;
