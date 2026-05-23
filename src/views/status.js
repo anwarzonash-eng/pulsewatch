@@ -1,5 +1,6 @@
 /** Server-rendered status page. */
 import { formatPercent } from "../stats.js";
+import { sparkline } from "./sparkline.js";
 
 export function renderStatus({ title, monitors, incidents = [], now = Date.now() }) {
   const allUp = monitors.every((m) => m.last?.ok);
@@ -31,7 +32,8 @@ function renderMonitor(m) {
   const label = { up: "Up", down: "Down", unknown: "No data" }[state];
   const detail = m.last ? `${m.last.ms} ms` : "";
   const uptime = m.uptime ? `<span class="uptime" title="last 30 days">${formatPercent(m.uptime.month)}</span>` : "";
-  return `<li class="monitor ${state}"><span class="name">${m.name}</span>${uptime}<span class="state">${label}</span><span class="ms">${detail}</span></li>`;
+  const spark = m.recent ? sparkline(m.recent) : "";
+  return `<li class="monitor ${state}"><span class="name">${m.name}</span>${spark}${uptime}<span class="state">${label}</span><span class="ms">${detail}</span></li>`;
 }
 
 function renderIncidents(incidents, monitors, now) {

@@ -38,6 +38,7 @@ export function createApp({ config, db }) {
       id: m.id,
       name: m.name,
       last: lastCheck(db, m.id),
+      recent: recentChecks(db, m.id, 40),
       uptime: uptimeSummary(db, m.id),
     }));
     const since = Date.now() - 14 * DAY;
