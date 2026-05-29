@@ -19,7 +19,8 @@ Create `pulsewatch.json`:
   "port": 3000,
   "monitors": [
     { "name": "My site", "url": "https://example.com", "interval": 60 },
-    { "name": "API health", "url": "https://example.com/health", "interval": 30, "timeout": 5 }
+    { "name": "API health", "url": "https://example.com/health", "interval": 30, "timeout": 5 },
+    { "name": "Shop", "url": "https://shop.example.com", "keyword": "Add to cart" }
   ]
 }
 ```

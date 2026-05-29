@@ -15,9 +15,16 @@ export async function checkHttp(monitor) {
       redirect: "follow",
       headers: { "user-agent": "pulsewatch" },
     });
-    await res.arrayBuffer();
-    const ok = res.status >= 200 && res.status < 400;
-    return { ok, status: res.status, ms: elapsed(), error: ok ? null : `HTTP ${res.status}` };
+    const body = await res.text();
+    const ms = elapsed();
+    if (res.status < 200 || res.status >= 400) {
+      return { ok: false, status: res.status, ms, error: `HTTP ${res.status}` };
+    }
+    // a 200 with an error page is still down if the expected text is missing
+    if (monitor.keyword && !body.includes(monitor.keyword)) {
+      return { ok: false, status: res.status, ms, error: `"${monitor.keyword}" not found in response` };
+    }
+    return { ok: true, status: res.status, ms, error: null };
   } catch (err) {
     const error = controller.signal.aborted
       ? `timeout after ${monitor.timeout}s`

@@ -41,3 +41,13 @@ test("slow response times out", async () => {
   assert.equal(r.ok, false);
   assert.equal(r.error, "timeout after 0.2s");
 });
+
+test("keyword must be in the body", async () => {
+  const srv = await testServer((req, res) => res.end("<h1>Welcome</h1>"));
+  const found = await checkHttp(monitor(srv.url, { keyword: "Welcome" }));
+  const missing = await checkHttp(monitor(srv.url, { keyword: "Dashboard" }));
+  await srv.close();
+  assert.equal(found.ok, true);
+  assert.equal(missing.ok, false);
+  assert.equal(missing.error, '"Dashboard" not found in response');
+});
