@@ -23,5 +23,8 @@ export async function checkHttp(monitor) {
       ? `timeout after ${monitor.timeout}s`
       : (err.cause?.code ?? err.message);
     return { ok: false, status: null, ms: elapsed(), error };
+  } finally {
+    // otherwise every check leaves a timer behind for `timeout` seconds
+    clearTimeout(timer);
   }
 }
