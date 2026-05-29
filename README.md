@@ -12,7 +12,7 @@ Needs Node.js 22+.
 npm install
 ```
 
-Create `pulsewatch.json`:
+Copy `pulsewatch.example.json` to `pulsewatch.json` (it is git-ignored) and edit it:
 
 ```json
 {

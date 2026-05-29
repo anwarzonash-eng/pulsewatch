@@ -1,0 +1,11 @@
+{
+  "title": "Example Status",
+  "port": 3000,
+  "database": "pulsewatch.db",
+  "failuresBeforeIncident": 2,
+  "monitors": [
+    { "name": "Example site", "url": "https://example.com", "interval": 60 },
+    { "name": "Example docs", "url": "https://example.org", "interval": 120, "keyword": "Example" },
+    { "name": "Local API", "url": "http://localhost:8080/health", "interval": 30, "timeout": 5 }
+  ]
+}
