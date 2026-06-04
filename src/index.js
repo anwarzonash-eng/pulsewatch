@@ -2,6 +2,7 @@
 import { loadConfig } from "./config.js";
 import { openDb, saveCheck } from "./db.js";
 import { IncidentTracker } from "./incidents.js";
+import { notify } from "./notify.js";
 import { startScheduler } from "./scheduler.js";
 import { createApp } from "./server.js";
 
@@ -15,7 +16,10 @@ startScheduler(config.monitors, (monitor, result) => {
   const state = result.ok ? "up  " : "DOWN";
   console.log(`${state} ${monitor.name} ${result.status ?? "-"} ${result.ms}ms ${result.error ?? ""}`);
   const event = incidents.record(monitor, result);
-  if (event) console.log(`incident ${event.type}: ${monitor.name}`);
+  if (event) {
+    console.log(`incident ${event.type}: ${monitor.name}`);
+    notify(config.webhooks, event, monitor);
+  }
 });
 
 createApp({ config, db }).listen(config.port, () => {

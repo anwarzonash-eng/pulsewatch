@@ -27,6 +27,7 @@ export function normalize(raw) {
     port: raw.port ?? 3000,
     database: raw.database ?? "pulsewatch.db",
     failuresBeforeIncident: raw.failuresBeforeIncident ?? 2,
+    webhooks: (raw.webhooks ?? []).map((h) => (typeof h === "string" ? { url: h } : h)),
     monitors,
   };
 }
