@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { message, notify, payload } from "../src/notify.js";
+import { guessFormat, message, notify, payload } from "../src/notify.js";
 import { testServer } from "./helpers.js";
 
 const monitor = { id: "api", name: "API", url: "https://api.example.com" };
@@ -34,4 +34,12 @@ test("a failing webhook is logged, not thrown", async () => {
   await notify([{ url: "http://127.0.0.1:1/hook" }], opened, monitor, { log: (m) => logs.push(m) });
   assert.equal(logs.length, 1);
   assert.match(logs[0], /failed/);
+});
+
+test("slack and discord formats", () => {
+  assert.deepEqual(payload(opened, monitor, "slack"), { text: "🔴 API is down: HTTP 502" });
+  assert.deepEqual(payload(opened, monitor, "discord"), { content: "🔴 API is down: HTTP 502", username: "pulsewatch" });
+  assert.equal(guessFormat("https://hooks.slack.com/services/T000/B000/XXXX"), "slack");
+  assert.equal(guessFormat("https://discord.com/api/webhooks/1/abc"), "discord");
+  assert.equal(guessFormat("https://example.com/hook"), "json");
 });

@@ -7,12 +7,16 @@ export function message(event, monitor) {
   return `🟢 ${monitor.name} is back up after ${minutes} min`;
 }
 
-export function payload(event, monitor) {
+/** Body for one webhook. Slack and Discord want their own shape. */
+export function payload(event, monitor, format = "json") {
+  const text = message(event, monitor);
+  if (format === "slack") return { text };
+  if (format === "discord") return { content: text, username: "pulsewatch" };
   return {
     event: event.type === "opened" ? "incident.opened" : "incident.resolved",
     monitor: { id: monitor.id, name: monitor.name, url: monitor.url },
     incident: event.incident,
-    text: message(event, monitor),
+    text,
   };
 }
 
@@ -27,7 +31,7 @@ export async function notify(webhooks, event, monitor, { fetchImpl = fetch, log 
         const res = await fetchImpl(hook.url, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload(event, monitor)),
+          body: JSON.stringify(payload(event, monitor, hook.format ?? guessFormat(hook.url))),
           signal: AbortSignal.timeout(10_000),
         });
         if (!res.ok) log(`webhook ${hook.url} answered HTTP ${res.status}`);
@@ -36,4 +40,11 @@ export async function notify(webhooks, event, monitor, { fetchImpl = fetch, log 
       }
     }),
   );
+}
+
+export function guessFormat(url) {
+  const { hostname } = new URL(url);
+  if (hostname === "hooks.slack.com") return "slack";
+  if (hostname === "discord.com" || hostname === "discordapp.com") return "discord";
+  return "json";
 }
