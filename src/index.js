@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { loadConfig } from "./config.js";
-import { openDb, saveCheck } from "./db.js";
+import { openDb, pruneChecks, saveCheck } from "./db.js";
 import { IncidentTracker } from "./incidents.js";
 import { notify } from "./notify.js";
 import { startScheduler } from "./scheduler.js";
@@ -21,6 +21,15 @@ startScheduler(config.monitors, (monitor, result) => {
     notify(config.webhooks, event, monitor);
   }
 });
+
+// keep the database small: drop old checks once at startup and then daily
+const DAY = 24 * 60 * 60 * 1000;
+const prune = () => {
+  const removed = pruneChecks(db, Date.now() - config.retentionDays * DAY);
+  if (removed) console.log(`pruned ${removed} checks older than ${config.retentionDays} days`);
+};
+prune();
+setInterval(prune, DAY).unref();
 
 createApp({ config, db }).listen(config.port, () => {
   console.log(`pulsewatch: watching ${config.monitors.length} monitor(s) on http://localhost:${config.port}`);

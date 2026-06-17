@@ -43,3 +43,8 @@ export function lastCheck(db, monitorId) {
 function toCheck(row) {
   return { at: row.checked_at, ok: row.ok === 1, status: row.status, ms: row.ms, error: row.error };
 }
+
+/** Delete checks older than `before` (ms). Incidents are kept. */
+export function pruneChecks(db, before) {
+  return db.prepare("DELETE FROM checks WHERE checked_at < ?").run(before).changes;
+}

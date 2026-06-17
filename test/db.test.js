@@ -14,3 +14,11 @@ test("saves and reads checks newest first", () => {
   assert.equal(lastCheck(db, "b").ms, 5);
   assert.equal(lastCheck(db, "missing"), null);
 });
+
+test("pruneChecks drops old rows only", async () => {
+  const { pruneChecks } = await import("../src/db.js");
+  const db = openDb(":memory:");
+  for (const at of [100, 200, 300]) saveCheck(db, "a", { ok: true, status: 200, ms: 1, error: null }, at);
+  assert.equal(pruneChecks(db, 250), 2);
+  assert.deepEqual(recentChecks(db, "a").map((c) => c.at), [300]);
+});
