@@ -23,5 +23,10 @@ test("lists monitors with their last check", async () => {
   const checks = await (await fetch(`${srv.url}/api/monitors/home-page/checks`)).json();
   assert.equal(checks.length, 1);
   assert.equal((await fetch(`${srv.url}/api/monitors/nope/checks`)).status, 404);
+
+  const badgeRes = await fetch(`${srv.url}/badge/home-page.svg?type=status`);
+  assert.equal(badgeRes.headers.get("content-type"), "image/svg+xml; charset=utf-8");
+  assert.match(await badgeRes.text(), /status: up/);
+  assert.equal((await fetch(`${srv.url}/badge/nope.svg`)).status, 404);
   srv.close();
 });

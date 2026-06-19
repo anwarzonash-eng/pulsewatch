@@ -2,7 +2,8 @@ import express from "express";
 import { fileURLToPath } from "node:url";
 import { lastCheck, recentChecks } from "./db.js";
 import { listIncidents } from "./incidents.js";
-import { DAY, uptimeSummary } from "./stats.js";
+import { DAY, formatPercent, uptimeSummary } from "./stats.js";
+import { badge } from "./views/badge.js";
 import { renderStatus } from "./views/status.js";
 
 export function createApp({ config, db }) {
@@ -31,6 +32,19 @@ export function createApp({ config, db }) {
 
   app.get("/api/incidents", (req, res) => {
     res.json(listIncidents(db, { limit: Math.min(Number(req.query.limit) || 20, 200) }));
+  });
+
+  // <img src="/badge/my-site.svg"> or /badge/my-site.svg?type=status
+  app.get("/badge/:id.svg", (req, res) => {
+    const monitor = byId.get(req.params.id);
+    if (!monitor) return res.status(404).type("svg").send(badge("pulsewatch", "not found", "unknown"));
+    const last = lastCheck(db, monitor.id);
+    const state = last == null ? "unknown" : last.ok ? "up" : "down";
+    const svg =
+      req.query.type === "status"
+        ? badge("status", { up: "up", down: "down", unknown: "no data" }[state], state)
+        : badge("uptime", formatPercent(uptimeSummary(db, monitor.id).month), state);
+    res.type("svg").send(svg);
   });
 
   app.get("/", (req, res) => {
