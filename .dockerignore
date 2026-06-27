@@ -1,0 +1,6 @@
+node_modules
+.git
+*.db
+*.db-*
+pulsewatch.json
+test

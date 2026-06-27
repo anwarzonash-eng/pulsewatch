@@ -16,6 +16,15 @@ npm start                                    # or: node src/index.js path/to/con
 
 Then open http://localhost:3000.
 
+### Docker
+
+```bash
+docker build -t pulsewatch .
+docker run -d -p 3000:3000 -v "$PWD/data:/data" pulsewatch
+```
+
+Put `pulsewatch.json` in `./data` and set `"database": "/data/pulsewatch.db"` in it so the history survives restarts.
+
 ## Configuration
 
 ```json
