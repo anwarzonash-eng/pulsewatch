@@ -22,3 +22,14 @@ test("pruneChecks drops old rows only", async () => {
   assert.equal(pruneChecks(db, 250), 2);
   assert.deepEqual(recentChecks(db, "a").map((c) => c.at), [300]);
 });
+
+test("file databases use WAL", async () => {
+  const { mkdtempSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const dir = mkdtempSync(join(tmpdir(), "pulsewatch-"));
+  const db = openDb(join(dir, "test.db"));
+  assert.equal(db.pragma("journal_mode", { simple: true }), "wal");
+  db.close();
+  rmSync(dir, { recursive: true, force: true });
+});

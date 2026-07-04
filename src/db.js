@@ -2,6 +2,10 @@ import Database from "better-sqlite3";
 
 export function openDb(file) {
   const db = new Database(file);
+  // WAL lets the status page read while a check is being written;
+  // without it we saw SQLITE_BUSY under load
+  db.pragma("journal_mode = WAL");
+  db.pragma("busy_timeout = 5000");
   db.exec(`
     CREATE TABLE IF NOT EXISTS checks (
       id INTEGER PRIMARY KEY,
