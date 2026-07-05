@@ -51,3 +51,16 @@ test("keyword must be in the body", async () => {
   assert.equal(missing.ok, false);
   assert.equal(missing.error, '"Dashboard" not found in response');
 });
+
+test("tcp: open port is up, closed port is down", async () => {
+  const { checkTcp, runCheck } = await import("../src/checker.js");
+  const srv = await testServer((req, res) => res.end());
+  const port = Number(new URL(srv.url).port);
+  const open = await runCheck({ type: "tcp", host: "127.0.0.1", port, timeout: 2 });
+  await srv.close();
+  const closed = await checkTcp({ host: "127.0.0.1", port, timeout: 2 });
+  assert.equal(open.ok, true);
+  assert.equal(open.error, null);
+  assert.equal(closed.ok, false);
+  assert.equal(closed.error, "ECONNREFUSED");
+});

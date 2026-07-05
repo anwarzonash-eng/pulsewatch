@@ -1,3 +1,28 @@
+import { connect } from "node:net";
+
+/** Run the right kind of check for the monitor. */
+export function runCheck(monitor) {
+  return monitor.type === "tcp" ? checkTcp(monitor) : checkHttp(monitor);
+}
+
+/**
+ * Can we open a TCP connection to host:port? For databases, SSH, mail servers.
+ * @returns {Promise<{ok: boolean, status: null, ms: number, error: string|null}>}
+ */
+export function checkTcp(monitor) {
+  const started = performance.now();
+  return new Promise((resolve) => {
+    const socket = connect({ host: monitor.host, port: monitor.port });
+    const done = (error) => {
+      socket.destroy();
+      resolve({ ok: !error, status: null, ms: Math.round(performance.now() - started), error });
+    };
+    socket.setTimeout(monitor.timeout * 1000, () => done(`timeout after ${monitor.timeout}s`));
+    socket.once("connect", () => done(null));
+    socket.once("error", (err) => done(err.code ?? err.message));
+  });
+}
+
 /**
  * Run one HTTP check.
  * @returns {Promise<{ok: boolean, status: number|null, ms: number, error: string|null}>}

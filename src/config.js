@@ -19,8 +19,9 @@ export function normalize(raw) {
   const monitors = (raw.monitors ?? []).map((m, i) => ({
     ...MONITOR_DEFAULTS,
     ...m,
+    type: m.type ?? "http",
     id: m.id ?? slug(m.name ?? `monitor-${i + 1}`),
-    name: m.name ?? m.url,
+    name: m.name ?? m.url ?? `${m.host}:${m.port}`,
   }));
   return {
     title: raw.title ?? "Status",

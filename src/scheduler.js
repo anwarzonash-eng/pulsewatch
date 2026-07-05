@@ -1,10 +1,10 @@
-import { checkHttp } from "./checker.js";
+import { runCheck } from "./checker.js";
 
 /**
  * Check every monitor now and then on its interval.
  * Returns a function that stops all timers.
  */
-export function startScheduler(monitors, onResult, { check = checkHttp } = {}) {
+export function startScheduler(monitors, onResult, { check = runCheck } = {}) {
   const timers = monitors.map((monitor) => {
     // a slow check must not overlap with the next one
     let running = false;

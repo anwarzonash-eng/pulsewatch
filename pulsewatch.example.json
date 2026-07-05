@@ -6,6 +6,7 @@
   "monitors": [
     { "name": "Example site", "url": "https://example.com", "interval": 60 },
     { "name": "Example docs", "url": "https://example.org", "interval": 120, "keyword": "Example" },
-    { "name": "Local API", "url": "http://localhost:8080/health", "interval": 30, "timeout": 5 }
+    { "name": "Local API", "url": "http://localhost:8080/health", "interval": 30, "timeout": 5 },
+    { "name": "Local Postgres", "type": "tcp", "host": "localhost", "port": 5432 }
   ]
 }

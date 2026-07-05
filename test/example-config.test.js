@@ -5,6 +5,6 @@ import { loadConfig } from "../src/config.js";
 
 test("example config loads", () => {
   const config = loadConfig(fileURLToPath(new URL("../pulsewatch.example.json", import.meta.url)));
-  assert.equal(config.monitors.length, 3);
-  assert.deepEqual(config.monitors.map((m) => m.id), ["example-site", "example-docs", "local-api"]);
+  assert.equal(config.monitors.length, 4);
+  assert.deepEqual(config.monitors.map((m) => m.id), ["example-site", "example-docs", "local-api", "local-postgres"]);
 });

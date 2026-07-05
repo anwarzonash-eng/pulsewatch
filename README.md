@@ -66,6 +66,12 @@ Each monitor:
 
 A check is up when the response is 2xx or 3xx (after redirects) and contains the keyword, if one is set.
 
+For anything that is not HTTP (a database, SSH, a mail server), use a TCP check. It is up when a connection opens:
+
+```json
+{ "name": "Postgres", "type": "tcp", "host": "db.internal", "port": 5432, "interval": 60 }
+```
+
 Webhook format is guessed from the URL for Slack and Discord; anything else gets JSON with `event` (`incident.opened` or `incident.resolved`), `monitor`, `incident` and a `text` line.
 
 ## API
