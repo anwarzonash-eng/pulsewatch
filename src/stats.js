@@ -1,10 +1,12 @@
 export const HOUR = 60 * 60 * 1000;
 export const DAY = 24 * HOUR;
 
-/** Percentage of successful checks since `since` (ms), or null without data. */
+/** Percentage of successful checks since `since` (ms), or null without data. Maintenance is not counted. */
 export function uptime(db, monitorId, since) {
   const row = db
-    .prepare("SELECT COUNT(*) AS total, SUM(ok) AS up FROM checks WHERE monitor_id = ? AND checked_at >= ?")
+    .prepare(
+      "SELECT COUNT(*) AS total, SUM(ok) AS up FROM checks WHERE monitor_id = ? AND checked_at >= ? AND maintenance = 0",
+    )
     .get(monitorId, since);
   return row.total ? (row.up / row.total) * 100 : null;
 }

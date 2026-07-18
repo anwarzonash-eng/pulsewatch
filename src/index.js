@@ -2,6 +2,7 @@
 import { loadConfig } from "./config.js";
 import { openDb, pruneChecks, saveCheck } from "./db.js";
 import { IncidentTracker } from "./incidents.js";
+import { activeWindow } from "./maintenance.js";
 import { notify } from "./notify.js";
 import { startScheduler } from "./scheduler.js";
 import { createApp } from "./server.js";
@@ -12,9 +13,12 @@ const db = openDb(config.database);
 const incidents = new IncidentTracker(db, { threshold: config.failuresBeforeIncident });
 
 startScheduler(config.monitors, (monitor, result) => {
-  saveCheck(db, monitor.id, result);
-  const state = result.ok ? "up  " : "DOWN";
+  const window = activeWindow(config.maintenance, monitor.id);
+  saveCheck(db, monitor.id, result, Date.now(), { maintenance: Boolean(window) });
+  const state = window ? "mnt " : result.ok ? "up  " : "DOWN";
   console.log(`${state} ${monitor.name} ${result.status ?? "-"} ${result.ms}ms ${result.error ?? ""}`);
+  // failures during planned maintenance do not open incidents
+  if (window) return;
   const event = incidents.record(monitor, result);
   if (event) {
     console.log(`incident ${event.type}: ${monitor.name}`);

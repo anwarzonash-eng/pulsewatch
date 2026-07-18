@@ -14,7 +14,8 @@ export function openDb(file) {
       ok INTEGER NOT NULL,
       status INTEGER,
       ms INTEGER,
-      error TEXT
+      error TEXT,
+      maintenance INTEGER NOT NULL DEFAULT 0
     );
     CREATE TABLE IF NOT EXISTS incidents (
       id INTEGER PRIMARY KEY,
@@ -24,13 +25,22 @@ export function openDb(file) {
       cause TEXT
     );
   `);
+  migrate(db);
   return db;
 }
 
-export function saveCheck(db, monitorId, result, at = Date.now()) {
+/** Databases created by older versions miss some columns. */
+function migrate(db) {
+  const columns = db.prepare("PRAGMA table_info(checks)").all().map((c) => c.name);
+  if (!columns.includes("maintenance")) {
+    db.exec("ALTER TABLE checks ADD COLUMN maintenance INTEGER NOT NULL DEFAULT 0");
+  }
+}
+
+export function saveCheck(db, monitorId, result, at = Date.now(), { maintenance = false } = {}) {
   db.prepare(
-    "INSERT INTO checks (monitor_id, checked_at, ok, status, ms, error) VALUES (?, ?, ?, ?, ?, ?)",
-  ).run(monitorId, at, result.ok ? 1 : 0, result.status, result.ms, result.error);
+    "INSERT INTO checks (monitor_id, checked_at, ok, status, ms, error, maintenance) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  ).run(monitorId, at, result.ok ? 1 : 0, result.status, result.ms, result.error, maintenance ? 1 : 0);
 }
 
 export function recentChecks(db, monitorId, limit = 50) {
@@ -45,7 +55,9 @@ export function lastCheck(db, monitorId) {
 }
 
 function toCheck(row) {
-  return { at: row.checked_at, ok: row.ok === 1, status: row.status, ms: row.ms, error: row.error };
+  const check = { at: row.checked_at, ok: row.ok === 1, status: row.status, ms: row.ms, error: row.error };
+  if (row.maintenance) check.maintenance = true;
+  return check;
 }
 
 /** Delete checks older than `before` (ms). Incidents are kept. */

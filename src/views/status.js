@@ -2,8 +2,8 @@
 import { formatPercent } from "../stats.js";
 import { sparkline } from "./sparkline.js";
 
-export function renderStatus({ title, monitors, incidents = [], now = Date.now() }) {
-  const allUp = monitors.every((m) => m.last?.ok);
+export function renderStatus({ title, monitors, incidents = [], maintenance = [], now = Date.now() }) {
+  const allUp = monitors.every((m) => m.maintenance || m.last?.ok);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -16,6 +16,7 @@ export function renderStatus({ title, monitors, incidents = [], now = Date.now()
   <main>
     <h1>${title}</h1>
     <p class="summary ${allUp ? "up" : "down"}">${allUp ? "All systems operational" : "Some systems are down"}</p>
+    ${renderMaintenance(maintenance, now)}
     <ul class="monitors">
       ${monitors.map(renderMonitor).join("\n      ")}
     </ul>
@@ -28,8 +29,8 @@ export function renderStatus({ title, monitors, incidents = [], now = Date.now()
 }
 
 function renderMonitor(m) {
-  const state = m.last == null ? "unknown" : m.last.ok ? "up" : "down";
-  const label = { up: "Up", down: "Down", unknown: "No data" }[state];
+  const state = m.maintenance ? "maintenance" : m.last == null ? "unknown" : m.last.ok ? "up" : "down";
+  const label = { up: "Up", down: "Down", unknown: "No data", maintenance: "Maintenance" }[state];
   const detail = m.last ? `${m.last.ms} ms` : "";
   const uptime = m.uptime ? `<span class="uptime" title="last 30 days">${formatPercent(m.uptime.month)}</span>` : "";
   const spark = m.recent ? sparkline(m.recent) : "";
@@ -60,4 +61,13 @@ export function formatDuration(ms) {
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
   return minutes % 60 ? `${hours} h ${minutes % 60} min` : `${hours} h`;
+}
+
+function renderMaintenance(windows, now) {
+  if (windows.length === 0) return "";
+  const items = windows.map((w) => {
+    const when = w.start <= now ? `now, until ${formatTime(w.end)} UTC` : `${formatTime(w.start)} – ${formatTime(w.end)} UTC`;
+    return `<li><strong>${w.note || "Planned maintenance"}</strong> <span class="when">${when}</span></li>`;
+  });
+  return `<ul class="maintenance">${items.join("")}</ul>`;
 }

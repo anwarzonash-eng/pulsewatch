@@ -79,3 +79,14 @@ h2 { font-size: 1.15rem; margin: 32px 0 12px; }
 .incident.resolved { border-left-color: var(--up); }
 .incident .badge { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
 .incident .when, .incident .cause { color: var(--muted); font-size: 0.9rem; }
+
+.maintenance {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: #fff6e0;
+  border: 1px solid #f0d58a;
+}
+.maintenance .when { color: var(--muted); font-size: 0.9rem; }
+.monitor.maintenance .state { color: #b7791f; }

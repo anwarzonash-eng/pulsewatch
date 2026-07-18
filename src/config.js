@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { parseWindows } from "./maintenance.js";
 
 const MONITOR_DEFAULTS = { interval: 60, timeout: 10, method: "GET" };
 
@@ -29,6 +30,7 @@ export function normalize(raw) {
     database: raw.database ?? "pulsewatch.db",
     failuresBeforeIncident: raw.failuresBeforeIncident ?? 2,
     retentionDays: raw.retentionDays ?? 90,
+    maintenance: parseWindows(raw.maintenance),
     webhooks: (raw.webhooks ?? []).map((h) => (typeof h === "string" ? { url: h } : h)),
     monitors,
   };
