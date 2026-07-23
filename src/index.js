@@ -8,7 +8,13 @@ import { startScheduler } from "./scheduler.js";
 import { createApp } from "./server.js";
 
 const configPath = process.argv[2] ?? "pulsewatch.json";
-const config = loadConfig(configPath);
+let config;
+try {
+  config = loadConfig(configPath);
+} catch (err) {
+  console.error(`pulsewatch: ${err.message}`);
+  process.exit(1);
+}
 const db = openDb(config.database);
 const incidents = new IncidentTracker(db, { threshold: config.failuresBeforeIncident });
 
