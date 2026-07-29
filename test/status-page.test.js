@@ -11,7 +11,7 @@ test("all up", () => {
   assert.match(html, /<title>Acme Status<\/title>/);
   assert.match(html, /All systems operational/);
   assert.match(html, /class="monitor up"/);
-  assert.match(html, /Updated 2026-04-05 12:00 UTC/);
+  assert.match(html, /Updated <time datetime="2026-04-05T12:00:00.000Z">2026-04-05 12:00 UTC<\/time>/);
 });
 
 test("one down, one without data", () => {

@@ -11,6 +11,7 @@ export function renderStatus({ title, monitors, incidents = [], maintenance = []
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${title}</title>
   <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
 </head>
 <body>
   <main>
@@ -22,7 +23,7 @@ export function renderStatus({ title, monitors, incidents = [], maintenance = []
     </ul>
     <h2>Recent incidents</h2>
     ${renderIncidents(incidents, monitors, now)}
-    <footer>Updated ${new Date(now).toISOString().replace("T", " ").slice(0, 16)} UTC</footer>
+    <footer>Updated ${timeTag(now)}</footer>
   </main>
 </body>
 </html>`;
@@ -45,7 +46,7 @@ function renderIncidents(incidents, monitors, now) {
     const state = i.resolvedAt ? "Resolved" : "Ongoing";
     return `<li class="incident ${i.resolvedAt ? "resolved" : "ongoing"}">
         <strong>${names.get(i.monitorId) ?? i.monitorId}</strong> <span class="badge">${state}</span>
-        <div class="when">${formatTime(i.startedAt)} UTC, ${formatDuration(end - i.startedAt)}</div>
+        <div class="when">${timeTag(i.startedAt)}, ${formatDuration(end - i.startedAt)}</div>
         <div class="cause">${i.cause ?? ""}</div>
       </li>`;
   });
@@ -54,6 +55,11 @@ function renderIncidents(incidents, monitors, now) {
 
 function formatTime(ms) {
   return new Date(ms).toISOString().replace("T", " ").slice(0, 16);
+}
+
+/** <time> with a UTC fallback text; public/app.js swaps in local time. */
+function timeTag(ms) {
+  return `<time datetime="${new Date(ms).toISOString()}">${formatTime(ms)} UTC</time>`;
 }
 
 export function formatDuration(ms) {
@@ -66,7 +72,7 @@ export function formatDuration(ms) {
 function renderMaintenance(windows, now) {
   if (windows.length === 0) return "";
   const items = windows.map((w) => {
-    const when = w.start <= now ? `now, until ${formatTime(w.end)} UTC` : `${formatTime(w.start)} – ${formatTime(w.end)} UTC`;
+    const when = w.start <= now ? `now, until ${timeTag(w.end)}` : `${timeTag(w.start)} – ${timeTag(w.end)}`;
     return `<li><strong>${w.note || "Planned maintenance"}</strong> <span class="when">${when}</span></li>`;
   });
   return `<ul class="maintenance">${items.join("")}</ul>`;

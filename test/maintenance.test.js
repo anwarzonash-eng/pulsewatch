@@ -62,5 +62,5 @@ test("status page shows maintenance", () => {
   assert.match(html, /All systems operational/);
   assert.match(html, /class="monitor maintenance"/);
   assert.match(html, /DB upgrade/);
-  assert.match(html, /now, until 2026-07-12 23:00 UTC/);
+  assert.match(html, /now, until <time datetime="2026-07-12T23:00:00.000Z">2026-07-12 23:00 UTC<\/time>/);
 });
