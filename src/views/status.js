@@ -35,7 +35,8 @@ function renderMonitor(m) {
   const detail = m.last ? `${m.last.ms} ms` : "";
   const uptime = m.uptime ? `<span class="uptime" title="last 30 days">${formatPercent(m.uptime.month)}</span>` : "";
   const spark = m.recent ? sparkline(m.recent) : "";
-  return `<li class="monitor ${state}"><span class="name">${m.name}</span>${spark}${uptime}<span class="state">${label}</span><span class="ms">${detail}</span></li>`;
+  const history = m.history ? renderHistory(m.history) : "";
+  return `<li class="monitor ${state}"><div class="row"><span class="name">${m.name}</span>${spark}${uptime}<span class="state">${label}</span><span class="ms">${detail}</span></div>${history}</li>`;
 }
 
 function renderIncidents(incidents, monitors, now) {
@@ -76,4 +77,19 @@ function renderMaintenance(windows, now) {
     return `<li><strong>${w.note || "Planned maintenance"}</strong> <span class="when">${when}</span></li>`;
   });
   return `<ul class="maintenance">${items.join("")}</ul>`;
+}
+
+export function historyClass(uptime) {
+  if (uptime == null) return "none";
+  if (uptime >= 99.9) return "good";
+  if (uptime >= 95) return "warn";
+  return "bad";
+}
+
+function renderHistory(days) {
+  const bars = days.map((d) => {
+    const title = `${d.date}: ${d.uptime == null ? "no data" : formatPercent(d.uptime)}`;
+    return `<span class="bar ${historyClass(d.uptime)}" title="${title}"></span>`;
+  });
+  return `<div class="history" aria-label="uptime for the last ${days.length} days">${bars.join("")}</div>`;
 }

@@ -46,3 +46,16 @@ test("incidents section", async () => {
 test("no incidents", () => {
   assert.match(renderStatus({ title: "S", monitors: [] }), /No incidents in the last 14 days/);
 });
+
+test("history bars", async () => {
+  const { historyClass } = await import("../src/views/status.js");
+  assert.equal(historyClass(null), "none");
+  assert.equal(historyClass(100), "good");
+  assert.equal(historyClass(99), "warn");
+  assert.equal(historyClass(80), "bad");
+  const html = renderStatus({
+    title: "S",
+    monitors: [{ id: "a", name: "A", last: { ok: true, ms: 1 }, history: [{ date: "2026-07-10", uptime: 50 }] }],
+  });
+  assert.match(html, /<span class="bar bad" title="2026-07-10: 50.00%">/);
+});

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { lastCheck, recentChecks } from "../db.js";
 import { listIncidents } from "../incidents.js";
 import { activeWindow, currentAndUpcoming } from "../maintenance.js";
-import { DAY, formatPercent, uptimeSummary } from "../stats.js";
+import { DAY, dailyHistory, formatPercent, uptimeSummary } from "../stats.js";
 import { badge } from "../views/badge.js";
 import { renderStatus } from "../views/status.js";
 
@@ -15,6 +15,7 @@ export function pageRoutes({ config, db, byId }) {
       name: m.name,
       last: lastCheck(db, m.id),
       recent: recentChecks(db, m.id, 40),
+      history: dailyHistory(db, m.id, 90),
       uptime: uptimeSummary(db, m.id),
       maintenance: Boolean(activeWindow(config.maintenance, m.id)),
     }));

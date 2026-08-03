@@ -45,11 +45,13 @@ h1 { margin: 0 0 16px; font-size: 1.6rem; }
 }
 
 .monitor {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+}
+.monitor .row {
   display: flex;
   gap: 12px;
   align-items: center;
-  padding: 14px 18px;
-  border-top: 1px solid var(--border);
 }
 .monitor:first-child { border-top: 0; }
 .monitor .name { flex: 1; font-weight: 500; }
@@ -90,3 +92,18 @@ h2 { font-size: 1.15rem; margin: 32px 0 12px; }
 }
 .maintenance .when { color: var(--muted); font-size: 0.9rem; }
 .monitor.maintenance .state { color: #b7791f; }
+
+.history {
+  display: flex;
+  gap: 2px;
+  margin-top: 10px;
+  height: 24px;
+}
+.history .bar { flex: 1; border-radius: 2px; background: var(--unknown); opacity: 0.35; }
+.history .bar.good { background: var(--up); opacity: 1; }
+.history .bar.warn { background: #e0a800; opacity: 1; }
+.history .bar.bad { background: var(--down); opacity: 1; }
+
+@media (max-width: 520px) {
+  .spark, .monitor .ms { display: none; }
+}
