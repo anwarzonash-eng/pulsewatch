@@ -12,8 +12,20 @@ export class ConfigError extends Error {
   }
 }
 
-/** Read pulsewatch.json and fill in defaults. */
-export function loadConfig(path) {
+/**
+ * Settings that differ per deployment can come from the environment instead of
+ * the file: PORT, PULSEWATCH_DB and PULSEWATCH_TITLE.
+ */
+export function applyEnv(raw, env = process.env) {
+  const out = { ...raw };
+  if (env.PORT) out.port = Number(env.PORT);
+  if (env.PULSEWATCH_DB) out.database = env.PULSEWATCH_DB;
+  if (env.PULSEWATCH_TITLE) out.title = env.PULSEWATCH_TITLE;
+  return out;
+}
+
+/** Read pulsewatch.json, apply environment overrides and fill in defaults. */
+export function loadConfig(path, env = process.env) {
   const file = resolve(path);
   let raw;
   try {
@@ -21,7 +33,7 @@ export function loadConfig(path) {
   } catch (err) {
     throw new Error(`cannot read config ${file}: ${err.message}`);
   }
-  return normalize(raw);
+  return normalize(applyEnv(raw, env));
 }
 
 export function normalize(raw) {

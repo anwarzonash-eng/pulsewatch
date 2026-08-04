@@ -7,7 +7,7 @@ import { notify } from "./notify.js";
 import { startScheduler } from "./scheduler.js";
 import { createApp } from "./server.js";
 
-const configPath = process.argv[2] ?? "pulsewatch.json";
+const configPath = process.argv[2] ?? process.env.PULSEWATCH_CONFIG ?? "pulsewatch.json";
 let config;
 try {
   config = loadConfig(configPath);

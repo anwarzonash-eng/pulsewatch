@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
+    "start:env": "node --env-file=.env src/index.js",
     "test": "node --test"
   },
   "author": "Zonash",

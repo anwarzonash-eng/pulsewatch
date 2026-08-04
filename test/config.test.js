@@ -52,3 +52,14 @@ test("reports every problem at once", () => {
 test("monitors must be a list", () => {
   assert.throws(() => normalize({ monitors: {} }), /monitors must be a list/);
 });
+
+test("environment overrides", async () => {
+  const { applyEnv } = await import("../src/config.js");
+  const raw = { port: 3000, database: "a.db", title: "A" };
+  assert.deepEqual(applyEnv(raw, { PORT: "8080", PULSEWATCH_DB: "/data/p.db", PULSEWATCH_TITLE: "B" }), {
+    port: 8080,
+    database: "/data/p.db",
+    title: "B",
+  });
+  assert.deepEqual(applyEnv(raw, {}), raw);
+});

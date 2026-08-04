@@ -16,6 +16,8 @@ npm start                                    # or: node src/index.js path/to/con
 
 Then open http://localhost:3000.
 
+`PORT`, `PULSEWATCH_DB`, `PULSEWATCH_TITLE` and `PULSEWATCH_CONFIG` override the file, which is handy in containers. See `.env.example` (`npm run start:env` loads `.env`).
+
 ### Docker
 
 ```bash
