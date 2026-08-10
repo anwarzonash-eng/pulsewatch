@@ -18,7 +18,7 @@ try {
 const db = openDb(config.database);
 const incidents = new IncidentTracker(db, { threshold: config.failuresBeforeIncident });
 
-startScheduler(config.monitors, (monitor, result) => {
+const stopScheduler = startScheduler(config.monitors, (monitor, result) => {
   const window = activeWindow(config.maintenance, monitor.id);
   saveCheck(db, monitor.id, result, Date.now(), { maintenance: Boolean(window) });
   const state = window ? "mnt " : result.ok ? "up  " : "DOWN";
@@ -41,6 +41,22 @@ const prune = () => {
 prune();
 setInterval(prune, DAY).unref();
 
-createApp({ config, db }).listen(config.port, () => {
+const server = createApp({ config, db }).listen(config.port, () => {
   console.log(`pulsewatch: watching ${config.monitors.length} monitor(s) on http://localhost:${config.port}`);
 });
+
+// Ctrl+C or `docker stop`: stop checking, finish open requests, close the db cleanly
+let stopping = false;
+function shutdown(signal) {
+  if (stopping) return;
+  stopping = true;
+  console.log(`pulsewatch: ${signal}, shutting down`);
+  stopScheduler();
+  server.close(() => {
+    db.close();
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(0), 5000).unref();
+}
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
