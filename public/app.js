@@ -9,3 +9,14 @@ for (const el of document.querySelectorAll("time[datetime]")) {
     el.title = date.toISOString();
   }
 }
+
+// Reload once a minute so a status page left open stays current,
+// but not while the tab is in the background.
+const REFRESH_MS = 60_000;
+let loadedAt = Date.now();
+setInterval(() => {
+  if (document.visibilityState === "visible" && Date.now() - loadedAt >= REFRESH_MS) {
+    loadedAt = Date.now();
+    location.reload();
+  }
+}, 5_000);
