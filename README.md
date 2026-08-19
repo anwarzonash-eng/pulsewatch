@@ -25,7 +25,7 @@ docker build -t pulsewatch .
 docker run -d -p 3000:3000 -v "$PWD/data:/data" pulsewatch
 ```
 
-Put `pulsewatch.json` in `./data` and set `"database": "/data/pulsewatch.db"` in it so the history survives restarts.
+Put `pulsewatch.json` in `./data` and set `"database": "/data/pulsewatch.db"` in it so the history survives restarts. There is also a `docker-compose.yml`; see [docs/deploy.md](docs/deploy.md) for Compose, systemd and reverse proxy setups.
 
 ## Configuration
 
