@@ -69,6 +69,7 @@ test("status page", async () => {
 test("badges", async () => {
   const res = await get("/badge/home-page.svg?type=status");
   assert.equal(res.headers.get("content-type"), "image/svg+xml; charset=utf-8");
+  assert.equal(res.headers.get("cache-control"), "no-cache, max-age=0");
   assert.match(await res.text(), /status: up/);
   assert.match(await (await get("/badge/api.svg")).text(), /uptime: 0.00%/);
   assert.equal((await get("/badge/nope.svg")).status, 404);

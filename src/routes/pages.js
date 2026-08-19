@@ -35,6 +35,8 @@ export function pageRoutes({ config, db, byId }) {
       req.query.type === "status"
         ? badge("status", { up: "up", down: "down", unknown: "no data" }[state], state)
         : badge("uptime", formatPercent(uptimeSummary(db, monitor.id).month), state);
+    // GitHub's image proxy caches for a long time unless told not to
+    res.set("Cache-Control", "no-cache, max-age=0");
     res.type("svg").send(svg);
   });
 
