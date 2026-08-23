@@ -25,6 +25,17 @@ export function apiRoutes({ config, db, byId }) {
     res.json(recentChecks(db, req.params.id, limitParam(req.query.limit, 50, 1000)));
   });
 
+  // one call for dashboards and scripts: overall state plus each monitor
+  router.get("/status", (req, res) => {
+    const monitors = config.monitors.map((m) => {
+      const last = lastCheck(db, m.id);
+      return { id: m.id, name: m.name, state: last == null ? "unknown" : last.ok ? "up" : "down", lastCheckedAt: last?.at ?? null };
+    });
+    const open = listIncidents(db, { limit: 200 }).filter((i) => i.resolvedAt == null).length;
+    const overall = monitors.some((m) => m.state === "down") ? "down" : monitors.every((m) => m.state === "up") ? "up" : "unknown";
+    res.json({ state: overall, openIncidents: open, monitors });
+  });
+
   router.get("/incidents", (req, res) => {
     res.json(listIncidents(db, { limit: limitParam(req.query.limit, 20, 200) }));
   });

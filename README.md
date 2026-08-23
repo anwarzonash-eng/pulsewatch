@@ -78,6 +78,7 @@ Webhook format is guessed from the URL for Slack and Discord; anything else gets
 
 ## API
 
+- `GET /api/status` - overall `up` / `down` / `unknown`, number of open incidents, and each monitor's state
 - `GET /api/monitors` - every monitor with its last check and uptime (24h, 7d, 30d)
 - `GET /api/monitors/:id/checks?limit=50` - recent checks, newest first
 - `GET /api/incidents?limit=20` - incidents, newest first

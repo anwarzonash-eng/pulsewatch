@@ -50,6 +50,13 @@ test("GET /api/monitors/:id/checks with limit", async () => {
   assert.equal((await get("/api/monitors/nope/checks")).status, 404);
 });
 
+test("GET /api/status", async () => {
+  const status = await (await get("/api/status")).json();
+  assert.equal(status.state, "down");
+  assert.equal(status.openIncidents, 1);
+  assert.deepEqual(status.monitors.map((m) => m.state), ["up", "down"]);
+});
+
 test("GET /api/incidents", async () => {
   const incidents = await (await get("/api/incidents")).json();
   assert.equal(incidents.length, 1);
