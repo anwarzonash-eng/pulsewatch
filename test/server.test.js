@@ -85,3 +85,17 @@ test("badges", async () => {
 test("static files", async () => {
   assert.equal((await get("/style.css")).status, 200);
 });
+
+test("config can be swapped at runtime", async () => {
+  const config = normalize({ title: "Before", monitors: [{ name: "A", url: "http://example.com" }] });
+  const app = createApp({ config, db: openDb(":memory:") });
+  const server = app.listen(0);
+  await new Promise((resolve) => server.once("listening", resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+
+  app.locals.setConfig(normalize({ title: "After", monitors: [{ name: "B", url: "http://example.com" }] }));
+  assert.match(await (await fetch(`${base}/`)).text(), /<h1>After<\/h1>/);
+  assert.deepEqual((await (await fetch(`${base}/api/monitors`)).json()).map((m) => m.id), ["b"]);
+  assert.equal((await fetch(`${base}/badge/a.svg`)).status, 404);
+  server.close();
+});

@@ -36,6 +36,8 @@ WantedBy=multi-user.target
 sudo systemctl enable --now pulsewatch
 ```
 
+Add `ExecReload=/bin/kill -HUP $MAINPID` to the service so `systemctl reload pulsewatch` picks up config changes without a restart. Monitors, webhooks and maintenance windows are reloaded; `port` and `database` need a restart.
+
 ## Behind a reverse proxy
 
 Run pulsewatch on localhost and let nginx or Caddy handle TLS:

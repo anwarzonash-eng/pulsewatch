@@ -18,7 +18,7 @@ try {
 const db = openDb(config.database);
 const incidents = new IncidentTracker(db, { threshold: config.failuresBeforeIncident });
 
-const stopScheduler = startScheduler(config.monitors, (monitor, result) => {
+function onResult(monitor, result) {
   const window = activeWindow(config.maintenance, monitor.id);
   saveCheck(db, monitor.id, result, Date.now(), { maintenance: Boolean(window) });
   const state = window ? "mnt " : result.ok ? "up  " : "DOWN";
@@ -30,7 +30,9 @@ const stopScheduler = startScheduler(config.monitors, (monitor, result) => {
     console.log(`incident ${event.type}: ${monitor.name}`);
     notify(config.webhooks, event, monitor);
   }
-});
+}
+
+let stopScheduler = startScheduler(config.monitors, onResult);
 
 // keep the database small: drop old checks once at startup and then daily
 const DAY = 24 * 60 * 60 * 1000;
@@ -41,7 +43,8 @@ const prune = () => {
 prune();
 setInterval(prune, DAY).unref();
 
-const server = createApp({ config, db }).listen(config.port, () => {
+const app = createApp({ config, db });
+const server = app.listen(config.port, () => {
   console.log(`pulsewatch: watching ${config.monitors.length} monitor(s) on http://localhost:${config.port}`);
 });
 
@@ -60,3 +63,22 @@ function shutdown(signal) {
 }
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
+
+// `kill -HUP <pid>` (or `systemctl reload`) re-reads the config without losing history
+process.on("SIGHUP", () => {
+  let next;
+  try {
+    next = loadConfig(configPath);
+  } catch (err) {
+    console.error(`pulsewatch: reload failed, keeping the old config\n${err.message}`);
+    return;
+  }
+  if (next.port !== config.port || next.database !== config.database) {
+    console.warn("pulsewatch: port and database changes need a restart");
+  }
+  stopScheduler();
+  config = { ...next, port: config.port, database: config.database };
+  app.locals.setConfig(config);
+  stopScheduler = startScheduler(config.monitors, onResult);
+  console.log(`pulsewatch: reloaded, watching ${config.monitors.length} monitor(s)`);
+});
