@@ -57,3 +57,18 @@ test("listIncidents filters by monitor, newest first", () => {
   assert.deepEqual(listIncidents(db).map((i) => i.startedAt), [4, 2, 1]);
   assert.deepEqual(listIncidents(db, { monitorId: "a" }).map((i) => i.startedAt), [4, 1]);
 });
+
+test("open incidents survive a restart", () => {
+  const db = openDb(":memory:");
+  const first = new IncidentTracker(db, { threshold: 2 });
+  first.record(m, fail(), 1);
+  first.record(m, fail(), 2);
+
+  const second = new IncidentTracker(db, { threshold: 2 });
+  assert.equal(second.record(m, fail(), 3), null, "no duplicate incident");
+  const resolved = second.record(m, ok, 4);
+  assert.equal(resolved.type, "resolved");
+  assert.equal(resolved.incident.startedAt, 2);
+  assert.equal(listIncidents(db).length, 1);
+  assert.equal(listIncidents(db)[0].resolvedAt, 4);
+});

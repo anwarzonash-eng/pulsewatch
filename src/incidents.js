@@ -10,6 +10,13 @@ export class IncidentTracker {
     this.threshold = threshold;
     this.failures = new Map(); // monitor id -> failed checks in a row
     this.open = new Map(); // monitor id -> open incident
+
+    // pick up incidents that were still open when the process stopped, otherwise
+    // they would never be resolved and a duplicate would be opened
+    for (const row of db.prepare("SELECT * FROM incidents WHERE resolved_at IS NULL").all()) {
+      this.open.set(row.monitor_id, toIncident(row));
+      this.failures.set(row.monitor_id, threshold);
+    }
   }
 
   /** @returns {{type: "opened" | "resolved", incident: object} | null} */
@@ -40,11 +47,9 @@ export function listIncidents(db, { limit = 20, monitorId } = {}) {
   const rows = monitorId
     ? db.prepare("SELECT * FROM incidents WHERE monitor_id = ? ORDER BY started_at DESC LIMIT ?").all(monitorId, limit)
     : db.prepare("SELECT * FROM incidents ORDER BY started_at DESC LIMIT ?").all(limit);
-  return rows.map((r) => ({
-    id: r.id,
-    monitorId: r.monitor_id,
-    startedAt: r.started_at,
-    resolvedAt: r.resolved_at,
-    cause: r.cause,
-  }));
+  return rows.map(toIncident);
+}
+
+function toIncident(r) {
+  return { id: r.id, monitorId: r.monitor_id, startedAt: r.started_at, resolvedAt: r.resolved_at, cause: r.cause };
 }
