@@ -64,3 +64,26 @@ test("tcp: open port is up, closed port is down", async () => {
   assert.equal(closed.ok, false);
   assert.equal(closed.error, "ECONNREFUSED");
 });
+
+test("statusMatches", async () => {
+  const { statusMatches } = await import("../src/checker.js");
+  assert.equal(statusMatches(200), true);
+  assert.equal(statusMatches(302), true);
+  assert.equal(statusMatches(404), false);
+  assert.equal(statusMatches(204, 204), true);
+  assert.equal(statusMatches(200, 204), false);
+  assert.equal(statusMatches(301, [200, 301]), true);
+  assert.equal(statusMatches(250, "200-299"), true);
+  assert.equal(statusMatches(300, "200-299"), false);
+  assert.equal(statusMatches(401, ["401", "403"]), true);
+});
+
+test("expectStatus: a 401 can be the healthy answer", async () => {
+  const srv = await testServer((req, res) => {
+    res.statusCode = 401;
+    res.end();
+  });
+  const r = await checkHttp(monitor(srv.url, { expectStatus: 401 }));
+  await srv.close();
+  assert.equal(r.ok, true);
+});

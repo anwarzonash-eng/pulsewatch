@@ -24,6 +24,20 @@ export function checkTcp(monitor) {
 }
 
 /**
+ * Is this status code what the monitor expects?
+ * expectStatus can be a number (204), a list ([200, 301]) or a range ("200-299").
+ * Without it, any 2xx or 3xx counts as up.
+ */
+export function statusMatches(status, expect) {
+  if (expect == null) return status >= 200 && status < 400;
+  return [expect].flat().some((e) => {
+    if (typeof e === "number") return status === e;
+    const [lo, hi] = String(e).split("-").map(Number);
+    return hi === undefined ? status === lo : status >= lo && status <= hi;
+  });
+}
+
+/**
  * Run one HTTP check.
  * @returns {Promise<{ok: boolean, status: number|null, ms: number, error: string|null}>}
  */
@@ -37,12 +51,13 @@ export async function checkHttp(monitor) {
     const res = await fetch(monitor.url, {
       method: monitor.method,
       signal: controller.signal,
-      redirect: "follow",
+      // with an explicit expectStatus you may want to see the redirect itself
+      redirect: monitor.expectStatus == null ? "follow" : "manual",
       headers: { "user-agent": "pulsewatch" },
     });
     const body = await res.text();
     const ms = elapsed();
-    if (res.status < 200 || res.status >= 400) {
+    if (!statusMatches(res.status, monitor.expectStatus)) {
       return { ok: false, status: res.status, ms, error: `HTTP ${res.status}` };
     }
     // a 200 with an error page is still down if the expected text is missing
