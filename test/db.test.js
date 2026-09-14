@@ -33,3 +33,13 @@ test("file databases use WAL", async () => {
   db.close();
   rmSync(dir, { recursive: true, force: true });
 });
+
+test("queries use the monitor/time index", () => {
+  const db = openDb(":memory:");
+  const plan = db
+    .prepare("EXPLAIN QUERY PLAN SELECT * FROM checks WHERE monitor_id = ? AND checked_at >= ?")
+    .all("a", 0)
+    .map((r) => r.detail)
+    .join(" ");
+  assert.match(plan, /checks_monitor_time/);
+});

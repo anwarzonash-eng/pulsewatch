@@ -26,6 +26,12 @@ export function openDb(file) {
     );
   `);
   migrate(db);
+  // every query filters by monitor and time; without this the status page got
+  // slow after a few months of 30 second checks
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS checks_monitor_time ON checks (monitor_id, checked_at);
+    CREATE INDEX IF NOT EXISTS incidents_started ON incidents (started_at);
+  `);
   return db;
 }
 
