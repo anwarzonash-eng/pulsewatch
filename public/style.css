@@ -7,6 +7,25 @@
   --down: #d64545;
   --unknown: #9aa1ad;
   --border: #e3e6eb;
+  --notice-bg: #fff6e0;
+  --notice-border: #f0d58a;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11151c;
+    --card: #1a2029;
+    --text: #e6e9ef;
+    --muted: #8d95a5;
+    --up: #34c172;
+    --down: #ef6161;
+    --unknown: #5d6573;
+    --border: #2a313c;
+    --notice-bg: #2b2414;
+    --notice-border: #6b5520;
+    color-scheme: dark;
+  }
 }
 
 * { box-sizing: border-box; }
@@ -87,8 +106,8 @@ h2 { font-size: 1.15rem; margin: 32px 0 12px; }
   margin: 16px 0 0;
   padding: 12px 18px;
   border-radius: 8px;
-  background: #fff6e0;
-  border: 1px solid #f0d58a;
+  background: var(--notice-bg);
+  border: 1px solid var(--notice-border);
 }
 .maintenance .when { color: var(--muted); font-size: 0.9rem; }
 .monitor.maintenance .state { color: #b7791f; }
