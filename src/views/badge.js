@@ -5,9 +5,12 @@ const COLORS = { up: "#1f9d55", down: "#d64545", unknown: "#9aa1ad" };
 // rough width of 11px Verdana; good enough for short labels
 const textWidth = (text) => Math.round(text.length * 6.5 + 10);
 
-export function badge(label, value, state) {
-  const lw = textWidth(label);
-  const vw = textWidth(value);
+const escapeXml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+export function badge(rawLabel, rawValue, state) {
+  const [label, value] = [escapeXml(rawLabel), escapeXml(rawValue)];
+  const lw = textWidth(String(rawLabel));
+  const vw = textWidth(String(rawValue));
   const w = lw + vw;
   const color = COLORS[state] ?? COLORS.unknown;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="20" role="img" aria-label="${label}: ${value}">

@@ -2,7 +2,15 @@
 import { formatPercent } from "../stats.js";
 import { sparkline } from "./sparkline.js";
 
-export function renderStatus({ title, monitors, incidents = [], maintenance = [], now = Date.now() }) {
+const ENTITIES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+
+/** Names, notes and error messages end up in HTML; never trust them. */
+export function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (c) => ENTITIES[c]);
+}
+
+export function renderStatus({ title: rawTitle, monitors, incidents = [], maintenance = [], now = Date.now() }) {
+  const title = escapeHtml(rawTitle);
   const allUp = monitors.every((m) => m.maintenance || m.last?.ok);
   return `<!doctype html>
 <html lang="en">
@@ -37,7 +45,7 @@ function renderMonitor(m) {
   const uptime = m.uptime ? `<span class="uptime" title="last 30 days">${formatPercent(m.uptime.month)}</span>` : "";
   const spark = m.recent ? sparkline(m.recent) : "";
   const history = m.history ? renderHistory(m.history) : "";
-  return `<li class="monitor ${state}"><div class="row"><span class="name">${m.name}</span>${spark}${uptime}<span class="state">${label}</span><span class="ms">${detail}</span></div>${history}</li>`;
+  return `<li class="monitor ${state}"><div class="row"><span class="name">${escapeHtml(m.name)}</span>${spark}${uptime}<span class="state">${label}</span><span class="ms">${detail}</span></div>${history}</li>`;
 }
 
 function renderIncidents(incidents, monitors, now) {
@@ -47,9 +55,9 @@ function renderIncidents(incidents, monitors, now) {
     const end = i.resolvedAt ?? now;
     const state = i.resolvedAt ? "Resolved" : "Ongoing";
     return `<li class="incident ${i.resolvedAt ? "resolved" : "ongoing"}">
-        <strong>${names.get(i.monitorId) ?? i.monitorId}</strong> <span class="badge">${state}</span>
+        <strong>${escapeHtml(names.get(i.monitorId) ?? i.monitorId)}</strong> <span class="badge">${state}</span>
         <div class="when">${timeTag(i.startedAt)}, ${formatDuration(end - i.startedAt)}</div>
-        <div class="cause">${i.cause ?? ""}</div>
+        <div class="cause">${escapeHtml(i.cause)}</div>
       </li>`;
   });
   return `<ul class="incidents">\n      ${items.join("\n      ")}\n    </ul>`;
@@ -75,7 +83,7 @@ function renderMaintenance(windows, now) {
   if (windows.length === 0) return "";
   const items = windows.map((w) => {
     const when = w.start <= now ? `now, until ${timeTag(w.end)}` : `${timeTag(w.start)} – ${timeTag(w.end)}`;
-    return `<li><strong>${w.note || "Planned maintenance"}</strong> <span class="when">${when}</span></li>`;
+    return `<li><strong>${escapeHtml(w.note || "Planned maintenance")}</strong> <span class="when">${when}</span></li>`;
   });
   return `<ul class="maintenance">${items.join("")}</ul>`;
 }

@@ -59,3 +59,17 @@ test("history bars", async () => {
   });
   assert.match(html, /<span class="bar bad" title="2026-07-10: 50.00%">/);
 });
+
+test("escapes names, notes and causes", async () => {
+  const { escapeHtml } = await import("../src/views/status.js");
+  assert.equal(escapeHtml(`<b>"Tom & Jerry's"</b>`), "&lt;b&gt;&quot;Tom &amp; Jerry&#39;s&quot;&lt;/b&gt;");
+  const html = renderStatus({
+    title: "<script>x</script>",
+    monitors: [{ id: "a", name: "<img src=x onerror=alert(1)>", last: { ok: true, ms: 1 } }],
+    incidents: [{ id: 1, monitorId: "a", startedAt: 0, resolvedAt: null, cause: '"<x>" not found in response' }],
+    now: 1,
+  });
+  assert.doesNotMatch(html, /<script>x<\/script>|<img src=x/);
+  assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.match(html, /&quot;&lt;x&gt;&quot; not found/);
+});

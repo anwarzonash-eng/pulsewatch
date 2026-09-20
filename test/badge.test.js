@@ -10,3 +10,7 @@ test("badge svg", () => {
   assert.match(badge("status", "down", "down"), /#d64545/);
   assert.match(badge("status", "?", "weird"), /#9aa1ad/);
 });
+
+test("badge text is escaped", () => {
+  assert.match(badge("a&b", "<1>", "up"), /a&amp;b.*&lt;1&gt;/s);
+});
