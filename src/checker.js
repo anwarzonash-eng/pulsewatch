@@ -53,7 +53,7 @@ export async function checkHttp(monitor) {
       signal: controller.signal,
       // with an explicit expectStatus you may want to see the redirect itself
       redirect: monitor.expectStatus == null ? "follow" : "manual",
-      headers: { "user-agent": "pulsewatch" },
+      headers: { "user-agent": "pulsewatch", ...monitor.headers },
     });
     const body = await res.text();
     const ms = elapsed();

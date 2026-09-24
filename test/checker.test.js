@@ -87,3 +87,15 @@ test("expectStatus: a 401 can be the healthy answer", async () => {
   await srv.close();
   assert.equal(r.ok, true);
 });
+
+test("sends monitor headers", async () => {
+  let seen;
+  const srv = await testServer((req, res) => {
+    seen = req.headers;
+    res.end();
+  });
+  await checkHttp(monitor(srv.url, { headers: { "x-health-key": "k1" } }));
+  await srv.close();
+  assert.equal(seen["x-health-key"], "k1");
+  assert.equal(seen["user-agent"], "pulsewatch");
+});

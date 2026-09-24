@@ -65,6 +65,7 @@ Each monitor:
 | `timeout` | `10` | Seconds before a check counts as failed |
 | `method` | `"GET"` | HTTP method |
 | `keyword` | none | Text that must appear in the response body |
+| `headers` | none | Extra request headers. `${NAME}` is replaced with an environment variable, so tokens stay out of the file |
 | `expectStatus` | 2xx/3xx | Status that counts as up: `204`, `[200, 301]` or `"200-299"`. Redirects are not followed when set |
 
 A check is up when the response is 2xx or 3xx (after redirects) and contains the keyword, if one is set.

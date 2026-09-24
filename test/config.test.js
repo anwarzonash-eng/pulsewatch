@@ -63,3 +63,15 @@ test("environment overrides", async () => {
   });
   assert.deepEqual(applyEnv(raw, {}), raw);
 });
+
+test("headers with ${ENV} values", () => {
+  const c = normalize(
+    { monitors: [{ name: "Admin", url: "https://example.com/admin/health", headers: { Authorization: "Bearer ${HEALTH_TOKEN}" } }] },
+    { HEALTH_TOKEN: "abc" },
+  );
+  assert.deepEqual(c.monitors[0].headers, { Authorization: "Bearer abc" });
+  assert.throws(
+    () => normalize({ monitors: [{ name: "Admin", url: "https://example.com", headers: { "X-Key": "${MISSING}" } }] }, {}),
+    /environment variable MISSING is not set/,
+  );
+});

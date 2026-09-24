@@ -33,10 +33,24 @@ export function loadConfig(path, env = process.env) {
   } catch (err) {
     throw new Error(`cannot read config ${file}: ${err.message}`);
   }
-  return normalize(applyEnv(raw, env));
+  return normalize(applyEnv(raw, env), env);
 }
 
-export function normalize(raw) {
+/**
+ * Replace ${NAME} with the environment variable, so tokens for protected health
+ * endpoints stay out of pulsewatch.json. Unknown names are reported, not left blank.
+ */
+export function expandEnv(text, env = process.env, problems = [], where = "") {
+  return String(text).replace(/\$\{([A-Z0-9_]+)\}/g, (match, name) => {
+    if (env[name] == null) {
+      problems.push(`${where}: environment variable ${name} is not set`);
+      return match;
+    }
+    return env[name];
+  });
+}
+
+export function normalize(raw, env = process.env) {
   if (!Array.isArray(raw.monitors ?? [])) throw new ConfigError(["monitors must be a list"]);
   const monitors = (raw.monitors ?? []).map((m, i) => ({
     ...MONITOR_DEFAULTS,
@@ -56,6 +70,16 @@ export function normalize(raw) {
     monitors,
   };
   const problems = validate(config);
+  config.monitors.forEach((m, i) => {
+    if (!m.headers) return;
+    if (typeof m.headers !== "object" || Array.isArray(m.headers)) {
+      problems.push(`monitors[${i}] (${m.name}): "headers" must be an object`);
+      return;
+    }
+    m.headers = Object.fromEntries(
+      Object.entries(m.headers).map(([k, v]) => [k, expandEnv(v, env, problems, `monitors[${i}] (${m.name}) header ${k}`)]),
+    );
+  });
   if (problems.length) throw new ConfigError(problems);
   return config;
 }
