@@ -79,6 +79,7 @@ process.on("SIGHUP", () => {
   stopScheduler();
   config = { ...next, port: config.port, database: config.database };
   app.locals.setConfig(config);
+  incidents.threshold = config.failuresBeforeIncident;
   stopScheduler = startScheduler(config.monitors, onResult);
   console.log(`pulsewatch: reloaded, watching ${config.monitors.length} monitor(s)`);
 });
