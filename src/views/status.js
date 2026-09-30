@@ -12,6 +12,11 @@ export function escapeHtml(value) {
 export function renderStatus({ title: rawTitle, monitors, incidents = [], maintenance = [], now = Date.now() }) {
   const title = escapeHtml(rawTitle);
   const allUp = monitors.every((m) => m.maintenance || m.last?.ok);
+  // [].every() is true, which made an empty page say everything is fine
+  const summary =
+    monitors.length === 0
+      ? `<p class="summary empty">No monitors configured yet. Add some to pulsewatch.json.</p>`
+      : `<p class="summary ${allUp ? "up" : "down"}">${allUp ? "All systems operational" : "Some systems are down"}</p>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -25,7 +30,7 @@ export function renderStatus({ title: rawTitle, monitors, incidents = [], mainte
 <body>
   <main>
     <h1>${title}</h1>
-    <p class="summary ${allUp ? "up" : "down"}">${allUp ? "All systems operational" : "Some systems are down"}</p>
+    ${summary}
     ${renderMaintenance(maintenance, now)}
     <ul class="monitors">
       ${monitors.map(renderMonitor).join("\n      ")}

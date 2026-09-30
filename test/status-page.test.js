@@ -43,6 +43,12 @@ test("incidents section", async () => {
   assert.equal(formatDuration(2 * 3600000), "2 h");
 });
 
+test("no monitors", () => {
+  const html = renderStatus({ title: "S", monitors: [] });
+  assert.match(html, /No monitors configured yet/);
+  assert.doesNotMatch(html, /All systems operational/);
+});
+
 test("no incidents", () => {
   assert.match(renderStatus({ title: "S", monitors: [] }), /No incidents in the last 14 days/);
 });
