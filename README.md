@@ -128,6 +128,10 @@ public/           css and the small client script
 docs/deploy.md    deployment guide
 ```
 
+## Roadmap
+
+SMTP and more alert channels, certificate expiry and heartbeat checks, and manual incident updates are next. See [ROADMAP.md](ROADMAP.md) and [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 [MIT](LICENSE)
